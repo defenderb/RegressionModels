@@ -1,0 +1,68 @@
+---
+output: pdf_document
+---
+Coursera Regression Models project
+=========================
+
+## Executive summary
+I'm trying to explore the relationship between a set of variables and miles per gallon (MPG) (outcome). Particulary I'm going to discuss the questions below:
+
+- Is an automatic or manual transmission better for MPG?
+- Quantify the MPG difference between automatic and manual transmissions
+
+## Data processing
+```{r}
+data(mtcars)
+mtcars$cyl <- factor(mtcars$cyl) 
+mtcars$am <- factor(mtcars$am)
+mtcars$gear <- factor(mtcars$gear)
+mtcars$carb <- factor(mtcars$carb)
+mtcars$vs <- factor(mtcars$vs)
+```
+## Model building 
+To compare automatic transmission vs. manual we need to keep all other variable equal, so create model, which have all variables.
+```
+fit <- lm(mpg ~., data = mtcars)
+summary(fit)
+```
+Many of variables add almost no information, lets exclude them. Also plot mpg versus weight and horsepower, as they have biggest significance (Fig 1)
+
+### Second model
+```{r}
+fit2 <- lm(mpg~wt+hp+am, data = mtcars)
+summary(fit2)$coefficients
+```
+On Fig 2 lets analize residuals of this model and regression variables.
+It's known to be that automatic transmission is heavier.
+Lets see if we can improve the model considering intaraction between weight and transmission type.
+### Model upgrade
+```{r}
+fit3 <- update(fit2, mpg~ wt + hp + am + wt * am )
+anova(fit3)
+summary(fit3)
+```
+As we can see interraction between weight and transmission in significant.
+
+## Conclusions
+
+- Cars with manual transmission have better for MPG (beta before am is positive)
+- Manual transmission gives 11.58 higher MPG. As we can see there is different relationship between weight and MPG for automatic and manual transmission. As average car weight with manual transmission is 2.411, average increase in MPG is 2.95 = 11.58-2.411*3.5779
+\pagebreak
+
+#Appendix
+```{r , message=FALSE}
+par(mfrow = c(1,2))
+plot(mtcars$wt, mtcars$mpg , col = mtcars$am,pch=19)
+plot(mtcars$hp, mtcars$mpg , col = mtcars$am,pch=19)
+```
+Fig. 1
+\pagebreak
+
+```{r , fig.hight= 10, message=FALSE}
+par(mfrow = c(3,1), mar = c(1,4,1,2))
+plot(mtcars$wt,  col = mtcars$am,pch=19, ylab='Weight')
+plot(mtcars$hp,  col = mtcars$am,pch=19, ylab='HPower')
+# plot residuals
+plot(fit2$residuals, col = mtcars$am, pch =19, ylab='Residuals')
+plot(fit2)
+```
